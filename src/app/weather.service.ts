@@ -8,12 +8,23 @@ import { ICurrentWeather } from './icurrent-weather';
 @Injectable({ 
   providedIn: 'root'
 })
+
 export class WeatherService {
 
   constructor(private httpClient: HttpClient) { }
 
-  getCurrentWeather(city: string, country:string) {
-    return this.httpClient.get<ICurrentWeatherData>(`https://api.openweathermap.org/data/2.5/weather?q=${city},${country}&appid=${environment.appId}`).pipe(
+  getCurrentWeather(search: string|number, country?:string) {
+    let uriParams = '';
+    if (typeof search === 'string'){
+      uriParams =`q=${search}`
+    } else{
+      uriParams = `zip=${search}`
+    }
+    if (country){
+      uriParams = `${uriParams},${country}`
+    }
+
+    return this.httpClient.get<ICurrentWeatherData>(`https://api.openweathermap.org/data/2.5/weather?${uriParams}&appid=${environment.appId}`).pipe(
       map(data => this.transformToICurrentWeather(data))
     )
   }
@@ -28,7 +39,8 @@ export class WeatherService {
         temperature: data.main.temp * 9/5 - 459.67,
         description: data.weather[0].description
 
-
       }
     }
 }
+
+
